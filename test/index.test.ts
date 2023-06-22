@@ -1,4 +1,4 @@
-import { PopPlugin, PluginResponse } from '.';
+import { PopPlugin, PluginResponse } from '../src';
 
 describe('PopPlugin', () => {
   let popPlugin: PopPlugin;
