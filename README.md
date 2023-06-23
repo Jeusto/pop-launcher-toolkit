@@ -7,6 +7,8 @@
 [![Commitizen Friendly][commitizen-img]][commitizen-url]
 [![Semantic Release][semantic-release-img]][semantic-release-url]
 
+A toolkit for creating plugins for the [Pop!\_OS launcher](https://github.com/pop-os/launcher) using Typescript.
+
 ## Install
 
 ```bash
@@ -15,11 +17,42 @@ npm install pop-launcher-toolkit
 
 ## Usage
 
+See [Pop launcher README.md](https://github.com/pop-os/launcher#plugin-config) for more information on how to create these plugins.
+They can be written in any language, this toolkit helps with the boilerplate of creating one in Typescript.
+
+Here's a few plugins that I've personnaly created : [Jeusto/pop-launcher-plugins](https://github.com/Jeusto/pop-launcher-plugins).
+You can check the [awesome-pop-launcher](https://github.com/lucas-dclrcq/awesome-pop-launcher) repo for even more examples.
+
+All you have to do is extend the `PopPlugin` class and implement the functions that you need.
+In the main function you can the simply initialize the plugin and call the `run()` and it will take care of the rest.
+
 ```ts
-import { PopLauncher } from 'pop-launcher-toolkit';
+import { PopPlugin } from 'pop-launcher-toolkit';
+
+async function main() {
+  const plugin = await HelloWorldPlugin.init();
+  plugin.run();
+}
+
+class HelloWorldPlugin extends PopPlugin {
+  private constructor() {
+    super();
+  }
+
+  static async init(): Promise<HelloWorldPlugin> {
+    return new HelloWorldPlugin();
+  }
+
+  search(query: string) {}
+  activate(index: number) {}
+}
+
+main();
 ```
 
 ## API
+
+[] Todo
 
 [build-img]: https://github.com/jeusto/pop-launcher-toolkit/actions/workflows/release.yml/badge.svg
 [build-url]: https://github.com/jeusto/pop-launcher-toolkit/actions/workflows/release.yml
