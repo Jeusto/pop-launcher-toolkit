@@ -1,30 +1,45 @@
 import { spawn } from 'child_process';
 import readline from 'readline';
+import {
+  ActivateContextEvent,
+  ActivateEvent,
+  CompleteEvent,
+  ContextEvent,
+  PluginResponse,
+  QuitEvent,
+  Request,
+  SearchEvent,
+} from './types';
 
+// PluginExt is the interface that plugins should implement
 export interface PluginExt {
   name(): string;
   run(): void;
   search(query: string): void;
-  activate(id: Index): void;
-  activate_context?(id: Index, context: Index): void;
-  complete?(id: Index): void;
-  context?(id: Index): void;
+  activate(id: number): void;
+  activate_context?(id: number, context: number): void;
+  complete?(id: number): void;
+  context?(id: number): void;
   exit?(): void;
   interrupt?(): void;
-  quit?(id: Index): void;
+  quit?(id: number): void;
   respond_with?(response: PluginResponse): void;
   init_logging?(): void;
 }
 
 export class PopPlugin implements PluginExt {
+  // The name of the plugin, used for logging, notifications, etc
   name(): string {
     return 'pop';
   }
 
+  // Function that should be called to send a response to the Pop launcher frontend
   respond_with(response: PluginResponse): void {
     process.stdout.write(`${JSON.stringify(response)}\n`);
   }
 
+  // Main function to run the plugin, reads from stdin and calls the appropriate methods (search, activate, etc)
+  // This function should preferably not be overridden
   run(): void {
     const rl = readline.createInterface({
       input: process.stdin,
@@ -73,18 +88,21 @@ export class PopPlugin implements PluginExt {
     });
   }
 
+  // Pop launcher related methods that should be overridden by the plugin
   search(query: string) {}
-  activate(id: Index) {}
-  complete(id: Index) {}
-
-  context(id: Index) {}
-  activate_context?(id: Index, context: Index) {}
-
+  activate(id: number) {}
+  complete(id: number) {}
+  context(id: number) {}
+  activate_context?(id: number, context: number) {}
   exit() {}
   interrupt() {}
-  quit(id: Index) {}
+  quit(id: number) {}
 
+  // Utility methods
   init_logging() {}
+
+  log() {}
+
   show_notification(
     title: string,
     body: string,
@@ -113,69 +131,3 @@ export class PopPlugin implements PluginExt {
     spawn('gdbus', args);
   }
 }
-
-// PluginResponse Types
-type Index = number;
-type GpuPreference = 'Default' | 'NonDefault';
-type IconSource = { Name: string } | { Mime: string };
-
-type ContextOption = {
-  id: number;
-  name: string;
-};
-
-export type PluginSearchResult = {
-  id: number;
-  name: string;
-  description: string;
-  keywords: Array<string> | null;
-  icon: IconSource | null;
-  exec: string | null;
-  window: [number, number] | null;
-};
-
-export type PluginResponse =
-  | { Append: PluginSearchResult }
-  | { Context: { id: Index; options: Array<ContextOption> } }
-  | { DesktopEntry: { path: string; gpu_preference: GpuPreference } }
-  | { Fill: string }
-  | 'Clear'
-  | 'Close'
-  | 'Finished';
-
-// Event types
-type ExitEvent = 'Exit';
-type InterruptEvent = 'Interrupt';
-
-export interface ActivateEvent {
-  Activate: number;
-}
-interface CompleteEvent {
-  Complete: number;
-}
-interface ContextEvent {
-  Context: number;
-}
-export interface QuitEvent {
-  Quit: number;
-}
-export interface SearchEvent {
-  Search: string;
-}
-
-export interface ActivateContextEvent {
-  ActivateContext: {
-    id: number;
-    context: number;
-  };
-}
-
-export type Request =
-  | ActivateEvent
-  | ActivateContextEvent
-  | CompleteEvent
-  | ContextEvent
-  | ExitEvent
-  | InterruptEvent
-  | QuitEvent
-  | SearchEvent;
