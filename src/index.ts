@@ -1,3 +1,4 @@
+import { spawn } from 'child_process';
 import readline from 'readline';
 
 export interface PluginExt {
@@ -84,6 +85,33 @@ export class PopPlugin implements PluginExt {
   quit(id: Index) {}
 
   init_logging() {}
+  show_notification(
+    title: string,
+    body: string,
+    icon: string,
+    timeout: number
+  ) {
+    const args = [
+      'call',
+      '--session',
+      '--dest',
+      'org.freedesktop.Notifications',
+      '--object-path',
+      '/org/freedesktop/Notifications',
+      '--method',
+      'org.freedesktop.Notifications.Notify',
+      'Pop launcher plugin ' + this.name(),
+      '0',
+      icon,
+      title,
+      body,
+      '[]',
+      '{}',
+      timeout.toString(),
+    ];
+
+    spawn('gdbus', args);
+  }
 }
 
 // PluginResponse Types
